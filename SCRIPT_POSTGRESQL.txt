@@ -1,0 +1,60 @@
+CREATE DATABASE "PROJET"
+    WITH
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'French_France.1252'
+    LC_CTYPE = 'French_France.1252'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+
+CREATE TYPE TypeProduit AS ENUM ('type1', 'type2', 'type3');
+CREATE TYPE Etat AS ENUM ('En vente', 'En attente de mise en vente', 'En attente de confirmation','Vendu','Expiré','Echec');
+
+CREATE TABLE PRODUIT (
+                         idProduit serial NOT NULL PRIMARY KEY ,
+                         produit_nom varchar(30) not null,
+                         produit_description varchar(60),
+                         produit_type TypeProduit not null
+);
+CREATE TABLE LOT (
+                     idLot serial not null primary key,
+                     lot_nom varchar(30) not null,
+                     lot_prixEstime float,
+                     lot_prixMin float,
+                     lot_dateD date not null,
+                     lot_dateF date not null,
+                     lot_etat etat not null default 'En attente de mise en vente',
+                     lot_nbMiseEnVente int check ( lot_nbMiseEnVente < 3 ) default 1
+);
+CREATE TABLE COMPOSITION (
+                             composition_quantite int not null,
+                             produitID serial not null references produit (idProduit),
+                             lotID serial not null references lot (idLot),
+                             primary key (produitID,lotID)
+);
+
+CREATE TABLE CLIENT (
+                        idClient serial not null primary key ,
+                        client_nom varchar(30) not null,
+                        client_prenom varchar(30) not null,
+                        client_tel varchar(10),
+                        client_email varchar(30) not null,
+                        client_dateInscrit date not null default now(),
+                        client_solde float default 0
+);
+CREATE TABLE ACHAT (
+                       idAchat serial not null primary key ,
+                       achat_montant float not null,
+                       achat_date date not null,
+                       achat_benefice float,
+                       lotId serial not null references lot (idLot),
+                       clientid serial not null references client (idClient)
+);
+CREATE TABLE PROPOSITION_ACHAT (
+                                   idPropAchat serial not null primary key,
+                                   clientId serial not null references client (idClient),
+                                   lotId serial not null references lot (idLot),
+                                   propAchat_montant float not null,
+                                   propAchat_date date not null,
+                                   propAchat_nbModif int check (propAchat_nbModif <= 2) default 1
+);
