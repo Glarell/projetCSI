@@ -39,7 +39,7 @@ CREATE TABLE CLIENT (
                         client_prenom varchar(30) not null,
                         client_tel varchar(10),
                         client_email varchar(30) not null,
-                        client_dateInscrit date not null default now(),
+                        client_dateInscrit TimeStamp not null default now(),
                         client_solde float default 0
 );
 CREATE TABLE ACHAT (
