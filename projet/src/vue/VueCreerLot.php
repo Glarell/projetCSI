@@ -1,6 +1,8 @@
 <?php
 
 namespace projet\vue;
+use Slim\Slim;
+
 
 class VueCreerLot extends VuePrincipale
 {
@@ -9,7 +11,8 @@ class VueCreerLot extends VuePrincipale
 
     public function __construct($indice) {
         parent::__construct();
-        $this->urlListeCree = self::getApp()->urlFor('lot_cree');
+        $app = Slim::getInstance();
+        $this->urlListeCree = $app->urlFor('lot_cree');
         switch ($indice) {
             case 0:
                 $this->choix1();
@@ -112,6 +115,25 @@ class VueCreerLot extends VuePrincipale
                            
                            </div>
                            <button class="btn btn-primary" type="submit" name="creerProduit">Créer le produit</button>
+                           </form>
+                           </div>
+                        <br>
+                        <br>
+                           
+                           <div class="card" style="width: 18rem;">
+                           <div class="card-body">
+                           <h5 class="card-title">Création d'un nouveau type de produit</h5>
+                           <form id="f1" method="post" action="$this->urlListeCree" enctype="multipart/form-data">
+                           
+                           <div class="form-row">
+                               <label for="validationServer01">Nouveau type de produit : </label>
+                               <input type="text" class="form-control" id="validationServer01" name="newTypeProduit" placeHolder="Exemple : type4" required>
+                               <div class="valid-feedback">
+                               </div>
+                           </div>
+                           
+                           </div>
+                           <button class="btn btn-primary" type="submit" name="creerNewTypeProduit">Créer le type de produit</button>
                            </form>
                            </div>
                         <br>
@@ -239,6 +261,25 @@ END;
                            </div>
                         <br>
                         <br>
+                        
+                           <div class="card" style="width: 18rem;">
+                           <div class="card-body">
+                           <h5 class="card-title">Création d'un nouveau type de produit</h5>
+                           <form id="f1" method="post" action="$this->urlListeCree" enctype="multipart/form-data">
+                           
+                           <div class="form-row">
+                               <label for="validationServer01">Nouveau type de produit : </label>
+                               <input type="text" class="form-control" id="validationServer01" name="newTypeProduit" placeHolder="Exemple : type4" required>
+                               <div class="valid-feedback">
+                               </div>
+                           </div>
+                           
+                           </div>
+                           <button class="btn btn-primary" type="submit" name="creerNewTypeProduit">Créer le type de produit</button>
+                           </form>
+                           </div>
+                        <br>
+                        <br>
                         <div class="card" style="width: 18rem;">
                            <div class="card-body">
                            <h5 class="card-title">Ajout d'un produit à un lot</h5>
@@ -356,6 +397,25 @@ END;
                            </div>
                            <button class="btn btn-primary" type="submit" name="creer">Créer le produit</button>
                            <div class="alert alert-primary" role="alert">Produit créé avec succès !</div>
+                           </form>
+                           </div>
+                        <br>
+                        <br>
+                        
+                           <div class="card" style="width: 18rem;">
+                           <div class="card-body">
+                           <h5 class="card-title">Création d'un nouveau type de produit</h5>
+                           <form id="f1" method="post" action="$this->urlListeCree" enctype="multipart/form-data">
+                           
+                           <div class="form-row">
+                               <label for="validationServer01">Nouveau type de produit : </label>
+                               <input type="text" class="form-control" id="validationServer01" name="newTypeProduit" placeHolder="Exemple : type4" required>
+                               <div class="valid-feedback">
+                               </div>
+                           </div>
+                           
+                           </div>
+                           <button class="btn btn-primary" type="submit" name="creerNewTypeProduit">Créer le type de produit</button>
                            </form>
                            </div>
                         <br>
@@ -482,6 +542,25 @@ END;
                            </div>
                         <br>
                         <br>
+                        
+                           <div class="card" style="width: 18rem;">
+                           <div class="card-body">
+                           <h5 class="card-title">Création d'un nouveau type de produit</h5>
+                           <form id="f1" method="post" action="$this->urlListeCree" enctype="multipart/form-data">
+                           
+                           <div class="form-row">
+                               <label for="validationServer01">Nouveau type de produit : </label>
+                               <input type="text" class="form-control" id="validationServer01" name="newTypeProduit" placeHolder="Exemple : type4" required>
+                               <div class="valid-feedback">
+                               </div>
+                           </div>
+                           
+                           </div>
+                           <button class="btn btn-primary" type="submit" name="creerNewTypeProduit">Créer le type de produit</button>
+                           </form>
+                           </div>
+                        <br>
+                        <br>
                         <div class="card" style="width: 18rem;">
                            <div class="card-body">
                            <h5 class="card-title">Ajout d'un produit à un lot</h5>
@@ -602,6 +681,25 @@ END;
                            
                            </div>
                            <button class="btn btn-primary" type="submit" name="creer">Créer le produit</button>
+                           </form>
+                           </div>
+                        <br>
+                        <br>
+                        
+                           <div class="card" style="width: 18rem;">
+                           <div class="card-body">
+                           <h5 class="card-title">Création d'un nouveau type de produit</h5>
+                           <form id="f1" method="post" action="$this->urlListeCree" enctype="multipart/form-data">
+                           
+                           <div class="form-row">
+                               <label for="validationServer01">Nouveau type de produit : </label>
+                               <input type="text" class="form-control" id="validationServer01" name="newTypeProduit" placeHolder="Exemple : type4" required>
+                               <div class="valid-feedback">
+                               </div>
+                           </div>
+                           
+                           </div>
+                           <button class="btn btn-primary" type="submit" name="creerNewTypeProduit">Créer le type de produit</button>
                            </form>
                            </div>
                         <br>

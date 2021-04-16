@@ -2,59 +2,14 @@
 
 namespace projet\controller;
 
+use projet\modele\Client;
 use projet\modele\Composition;
+use Illuminate\Database\Capsule\Manager as DB;
 use projet\modele\Produit;
 use projet\vue\VueCreerLot;
 use projet\modele\Lot;
 class FormulaireOKController
 {
-    /*
-    * fonction pour creer une liste
-    */
-   /* public static function control(){
-        if (isset($_POST['creer'])){
-            $l = new Liste();
-            $tokenGenerated = "";
-            $token = openssl_random_pseudo_bytes(32);
-            $token = bin2hex($token);
-            $tokenGenerated = $token;
-  
-            $tokenModifGenerated = "";
-            $tokenModif = openssl_random_pseudo_bytes(32);
-            $tokenModif = bin2hex($tokenModif);
-            $tokenModifGenerated = $tokenModif;
-            $titre = $_POST['titre'];
-            $description = $_POST['description'];
-            $date =  $_POST['expiration'];
-            $dateCourante = date("Y") . "-" . date("m") ."-" . date("d");
-            if ($date < $dateCourante) {
-                $vue =  new VueCreerListe("erreurDate");
-                $vue->render();
-            } else {
-            $titre = filter_var($titre, FILTER_SANITIZE_SPECIAL_CHARS);
-            $titre = filter_var($titre, FILTER_SANITIZE_STRING);
-            $description = filter_var($description, FILTER_SANITIZE_SPECIAL_CHARS);
-            $description = filter_var($description, FILTER_SANITIZE_STRING);
-            $date = filter_var($date, FILTER_SANITIZE_SPECIAL_CHARS);
-            $date = filter_var($date, FILTER_SANITIZE_STRING);
-            if (isset($_POST['liste_publique'])) {
-                $l->public = 1;
-            } else 
-                $l->public = null;
-            $l->titre = $titre;
-            $l->description = $description;
-            $l->expiration = $date;
-            $l->user_id = null;
-            $l->token = $tokenGenerated;
-            $l->tokenModif = $tokenModifGenerated;
-            $res = $l->save();
-            $vue =  new VueListeCree($l);
-            $vue->render();
-            }
-          }
-        
-    }*/
-
 
     public static function create() {
         try {
@@ -96,10 +51,39 @@ class FormulaireOKController
                 $composition->save();
                 $vue = new VueCreerLot(3);
                 $vue->render();
+            } else if (isset($_POST['creerNewTypeProduit'])){
+                $newType = $_POST['newTypeProduit'];
+                $file = parse_ini_file('src/conf/conf.ini');
+                $db = new DB();
+                $db->addConnection($file);
+                $db->setAsGlobal();
+                $db->bootEloquent();
+                $db::statement("ALTER TYPE typeproduit add VALUE '$newType'");
+                $vue = new VueCreerLot(3);
+                $vue->render();
             }
         } catch (\Exception $e) {
             $vue = new VueCreerLot(4);
            $vue->render();
+        }
+    }
+    public static function createAccount() {
+        try {
+            if (isset($_POST['creer'])){
+                $nom = $_POST['nomClient'];
+                $prenom = $_POST['prenomClient'];
+                $tel = $_POST['telClient'];
+                $email = $_POST['emailClient'];
+                $client = new Client();
+                $client->client_nom = $nom;
+                $client->client_prenom = $prenom;
+                $client->client_tel = $tel;
+                $client->client_email = $email;
+                $client->save();
+                echo 'succes';
+            }
+        } catch (\Exception $e) {
+            echo 'echec\n' . $e;
         }
     }
 }

@@ -9,6 +9,8 @@ use projet\controller\CompteClientController;
 require 'vendor/autoload.php';
 
 use Illuminate\Database\Capsule\Manager as DB;
+use projet\controller\ProduitController;
+use projet\controller\Proposition_achatController;
 
 $file = parse_ini_file('src/conf/conf.ini');
 $db = new DB();
@@ -93,9 +95,79 @@ $app->get('/client/compte/:id', function($id) {
     CompteClientController::generate($id);
 })->name('compte_client');
 
-$app->post('/creer/liste', function () {
-    FormulaireOKController::control();
-})->name('liste_cree');
+/* ajout solde */
+$app->post('/client/compte/:id', function($id){
+    CompteClientController::ajout_solde($id);
+})->name('solde_client');
+
+/* création compte */
+$app->get('/creer/compte', function () {
+    CompteClientController::generateForm();
+})->name('creation_compte_client');
+
+/* créer compte */
+$app->post('/creer/compte', function () {
+    FormulaireOKController::createAccount();
+})->name('creer_compte_client');
+
+/* afficher lots */
+$app->get('/afficher/lots/client/:id', function ($id) {
+    LotController::afficherC($id);
+})->name('afficher_lots_client');
+
+/* afficher lots */
+$app->get('/afficher/lots/gestionnaire/', function () {
+    LotController::afficherG();
+})->name('afficher_lots_gestionnaire');
+
+/* gestionnaire afficher lot post filter */
+$app->post('/afficher/lots/gestionnaire/', function () {
+    LotController::afficherG();
+})->name('afficher_lots_gestionnaire_post');
+
+/* client afficher lot post filter */
+$app->post('/afficher/lots/client/:id', function ($id) {
+    LotController::afficherC($id);
+})->name('afficher_lots_clients_post');
+
+/* afficher produits */
+$app->get('/afficher/produits/client/:id', function ($id) {
+    ProduitController::afficherC($id);
+})->name('afficher_produits_client');
+
+/* afficher produits */
+$app->get('/afficher/produits/gestionnaire/', function () {
+    ProduitController::afficherG();
+})->name('afficher_produits_gestionnaire');
+
+/* gestionnaire afficher produits post filter */
+$app->post('/afficher/produits/gestionnaire/', function () {
+    ProduitController::afficherG();
+})->name('afficher_produits_gestionnaire_post');
+
+/* client afficher produits post filter */
+$app->post('/afficher/produits/client/:id', function ($id) {
+    ProduitController::afficherC($id);
+})->name('afficher_produits_clients_post');
+
+/* ajout d'une proposition achat dans la bdd via formulaire */
+$app->get('/proposer/achat/', function(){
+    Proposition_achatController::create();
+})->name('proposer_achat');
+
+/* ajout d'une proposition achat dans la bdd via formulaire POST */
+$app->post('/proposer/achat/', function(){
+    Proposition_achatController::create();
+})->name('proposer_achat_post');
+
+
+
+
+
+
+
+
+
 
 $app->post('/confirmation/ajout', function() {
     FormulaireOKController::control3();

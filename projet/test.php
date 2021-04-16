@@ -13,18 +13,23 @@ $db->addConnection($file);
 $db->setAsGlobal();
 $db->bootEloquent();
 
+$produit  = $db::table('pg_enum')->where('enumtypid','=',16515)->get(['enumlabel']);
 
 /*
 $produit = new Produit();
 $produit->idProduit=3;
 $produit->save();*/
 
-$produit = Produit::get();
-
+//var_dump($produit);
 foreach ($produit as $value){
-    echo $value;
+   // var_dump($value);
     echo "<br>";
+    echo "<br>";
+    foreach ($value as $v) {
+        echo($v);
+    }
 }
+
 /*
 $list = Liste::get();
 

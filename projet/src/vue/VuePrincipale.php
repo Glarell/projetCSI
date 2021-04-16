@@ -16,16 +16,6 @@ class VuePrincipale
 
     public function __construct()
     {
-        $this->app = Slim::getInstance();
-        $this->lienAccueil = $this->app->urlFor('page_index');
-        $this->lienAfficherUneListe = $this->app->urlFor('demander_une_liste');
-        $this->lienCreerLot = $this->app->urlFor('creer_lot');
-        $this->lienVersClient = $this->app->urlFor('page_index_client');
-
-        $this->URLimages = $this->app->request->getRootUri() . '/img/';
-        $this->URLbootstrapCSS = $this->app->request->getRootUri() . '/public/bootstrap.css';
-        $this->URLbootstrapJS = $this->app->request->getRootUri() . '/public/boostrap.min.js';
-        $this->URLpersoCSS = $this->app->request->getRootUri() . '/public/css_perso.css';
     }
 
     /*
@@ -56,6 +46,16 @@ class VuePrincipale
 
     protected function getMenu()
     {
+        $this->app = Slim::getInstance();
+        $this->lienAccueil = $this->app->urlFor('page_index');
+        $this->lienAfficherUneListe = $this->app->urlFor('demander_une_liste');
+        $this->lienCreerLot = $this->app->urlFor('creer_lot');
+        $this->lienVersClient = $this->app->urlFor('page_index_client');
+
+        $this->URLimages = $this->app->request->getRootUri() . '/img/';
+        $this->URLbootstrapCSS = $this->app->request->getRootUri() . '/public/bootstrap.css';
+        $this->URLbootstrapJS = $this->app->request->getRootUri() . '/public/boostrap.min.js';
+        $this->URLpersoCSS = $this->app->request->getRootUri() . '/public/css_perso.css';
         return <<<END
         <!DOCTYPE HTML>
         <html>
@@ -84,6 +84,18 @@ class VuePrincipale
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/client/1">Client</a>
+                  </li>
+                  
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/afficher/lots/gestionnaire">Voir lots</a>
+                  </li>
+                  
+                   <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/afficher/produits/gestionnaire">Voir produits</a>
+                  </li>
+                                    
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/creer/compte">S'inscrire</a>
                   </li>
                       </ul>
                     </div>
@@ -133,6 +145,22 @@ END;
                       </li>
                   <li class="nav-item">
                     <a class="nav-link" href="$this->lienVersClient">Gestionnaire</a>
+                  </li>
+                  
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/afficher/lots/client/1">Voir lots</a>
+                  </li>
+                  
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/afficher/produits/client/1">Voir produits</a>
+                  </li>
+                  
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/proposer/achat/">Proposer un achat</a>
+                  </li>
+                  
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/creer/compte">S'inscrire</a>
                   </li>
                       </ul>
                     </div>

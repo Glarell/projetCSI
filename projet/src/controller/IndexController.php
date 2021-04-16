@@ -4,7 +4,6 @@
 namespace projet\controller;
 use projet\index;
 use projet\vue\VueAccueil;
-use projet\vue\VueCompte;
 use projet\vue\VueAccueilClient;
 use projet\modele\Client;
 
