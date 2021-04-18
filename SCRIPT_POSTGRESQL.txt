@@ -6,55 +6,209 @@ CREATE DATABASE "PROJET"
     LC_CTYPE = 'French_France.1252'
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
-
+--			TYPE
+DROP TYPE IF EXISTS TypeProduit CASCADE;
 CREATE TYPE TypeProduit AS ENUM ('type1', 'type2', 'type3');
+DROP TYPE IF EXISTS Etat CASCADE;
 CREATE TYPE Etat AS ENUM ('En vente', 'En attente de mise en vente', 'En attente de confirmation','Vendu','Expiré','Echec');
 
-CREATE TABLE PRODUIT (
+--			TABLE
+--		CREATION
+CREATE TABLE IF NOT EXISTS PRODUIT (
                          idProduit serial NOT NULL PRIMARY KEY ,
                          produit_nom varchar(30) not null,
                          produit_description varchar(60),
                          produit_type TypeProduit not null
 );
-CREATE TABLE LOT (
+CREATE TABLE IF NOT EXISTS LOT (
                      idLot serial not null primary key,
                      lot_nom varchar(30) not null,
                      lot_prixEstime float,
                      lot_prixMin float,
-                     lot_dateD date not null,
+                     lot_dateD date not null DEFAULT NOW(), -- doit ne pas pouvoir être saisie
                      lot_dateF date not null,
                      lot_etat etat not null default 'En attente de mise en vente',
                      lot_nbMiseEnVente int check ( lot_nbMiseEnVente < 3 ) default 1
 );
-CREATE TABLE COMPOSITION (
+CREATE TABLE IF NOT EXISTS COMPOSITION (
                              composition_quantite int not null,
                              produitID serial not null references produit (idProduit),
                              lotID serial not null references lot (idLot),
                              primary key (produitID,lotID)
 );
 
-CREATE TABLE CLIENT (
+CREATE TABLE IF NOT EXISTS CLIENT (
                         idClient serial not null primary key ,
                         client_nom varchar(30) not null,
                         client_prenom varchar(30) not null,
                         client_tel varchar(10),
                         client_email varchar(30) not null,
-                        client_dateInscrit TimeStamp not null default now(),
+                        client_dateInscrit date not null default now(),
                         client_solde float default 0
 );
-CREATE TABLE ACHAT (
+CREATE TABLE IF NOT EXISTS ACHAT (
                        idAchat serial not null primary key ,
                        achat_montant float not null,
                        achat_date date not null,
                        achat_benefice float,
-                       lotId serial not null references lot (idLot),
+                       lotId serial UNIQUE references lot (idLot),
                        clientid serial not null references client (idClient)
 );
-CREATE TABLE PROPOSITION_ACHAT (
-                                   idPropAchat serial not null primary key,
-                                   clientId serial not null references client (idClient),
-                                   lotId serial not null references lot (idLot),
-                                   propAchat_montant float not null,
-                                   propAchat_date date not null,
-                                   propAchat_nbModif int check (propAchat_nbModif <= 2) default 1
-);
+
+--		MODIFICATION
+ALTER TABLE LOT (
+	ADD CONSTRAINT lot_prixMin_inf_estimation
+		CHECK(lot_prixEstime>prixMin),
+	ADD CONSTRAINT lot_prix_sup_zero
+		CHECK(lot_prixEstime>0)
+) ;
+
+--			REQUETE PREPAREE --Attention l'instruction DEALLOCATE n'est pas idempotente
+
+DEALLOCATE gagnants ;
+PREPARE gagnants(integer) AS
+	SELECT idclient, propAchat_montant, propachat_date
+	FROM lot, proposition_achat, client
+	WHERE	idlot=$1
+		AND	idlot=lotid
+		AND	propachat_montant>=lot_prixmin
+		AND	clientid=idclient
+		AND	client_solde>=propachat_montant
+	ORDER BY propachat_montant DESC, propachat_date DESC;
+	
+DEALLOCATE offres ;
+PREPARE offres(integer) AS
+	SELECT clientid, propachat_montant
+	FROM proposition_achat
+	WHERE	lotid=$1;
+
+--			TRIGGER
+CREATE OR REPLACE FUNCTION trigger_modification_montant_prop() RETURNS TRIGGER
+AS $tmmp$
+BEGIN
+	IF(NEW.propAchat_montant < OLD.propAchat_montant) THEN
+		RAISE EXCEPTION 'Le montant de la proposition ne peut qu augmenter' ;
+	END IF;
+END ;
+$tmmp$ LANGUAGE plpgsql ;
+
+DROP TRIGGER IF EXISTS	modification_montant_prop ON proposition_achat ;
+CREATE TRIGGER modification_montant_prop
+BEFORE UPDATE ON proposition_achat
+FOR EACH ROW EXECUTE FUNCTION trigger_modification_montant_prop() ;
+
+
+CREATE OR REPLACE FUNCTION trigger_ajout_prop() RETURNS TRIGGER
+AS $tap$
+BEGIN
+	IF(propAchat_montant>client_solde) THEN
+		RAISE EXCEPTION 'Le montant de la proposition ne peut dépasser le solde du client.' ;
+	END IF;
+END ;
+$tap$ LANGUAGE plpgsql ;
+
+DROP TRIGGER IF EXISTS ajout_prop ON proposition_achat;
+CREATE TRIGGER ajout_prop
+BEFORE INSERT ON proposition_achat
+FOR EACH ROW EXECUTE FUNCTION trigger_ajout_prop() ;
+
+
+CREATE OR REPLACE FUNCTION modification_lot_prixmin() RETURNS TRIGGER
+AS $mlpm$
+BEGIN
+	IF(NEW.lot_prixMin <= OLD.lot_prixMin*0,9) THEN
+		RAISE EXCEPTION
+			USING MESSAGE = 'Le prix minimum doit être abaissé d au moins 10 % par rapport au précédant. ' ;
+	END IF;
+END ;
+$mlpm$ LANGUAGE plpgsql ;
+
+DROP TRIGGER IF EXISTS modification_lot_prixmin ON lot;
+CREATE TRIGGER modification_lot_prixmin
+BEFORE INSERT ON lot
+FOR EACH ROW EXECUTE FUNCTION trigger_ajout_prop() ;
+
+
+
+
+-- Jusque là le code fonctionne
+
+/*Liste des règles nécessitants un trigger
+	R3 : à l'ajout vérifie le nombre de proposition --> vérifions d'abord si le check n'empèche pas l'exécution de la commande d'insertion
+	R4 : Date inscription < date début enchère pour pouvoir faire une proposition --> idem
+	R5 : DONE
+	R6 : DONE
+	R14 : DONE
+	R15 : Lors de l’achat d’un lot, call procédure R15.
+	*/
+
+	
+		
+CREATE OR REPLACE PROCEDURE prelevement_commission(leLot lot.idlot%type, leClient client.idclient%type)
+AS $$
+	DECLARE
+		var_client proposition_achat.propAchat_montant%type ;
+		var_montant proposition_achat.propAchat_montant%type ;
+	BEGIN
+	-- Prélève 5% de l'offre du client et 2% de toutes les offres
+		FOR var_client, var_montant IN (
+					offres(leLot)
+				EXCEPT
+					(SELECT clientid, propAchat_montant
+					FROM proposition_achat
+					WHERE clientid=leClient)
+			LOOP
+				UPDATE client
+				SET client_solde = OLD.client.client_solde - var_montant*0,02
+				WHERE idclient = var_client
+				-- Ne faut-il pas déplacer l'argent plutôt que l'effacer ?
+			END LOOP;
+		SELECT	propAchat_montant INTO var_montant
+		FROM	proposition_achat
+		WHERE	clientid = leClient
+			AND	lotid = leLot
+
+		UPDATE client
+		SET client_solde = OLD.client.client_solde - var_montant*0,05
+		WHERE	idclient = leClient
+			AND lotid = leLot
+	END ;
+$$ LANGUAGE plpgsql ;
+
+DROP TRIGGER IF EXISTS confirmation_achat_lot ON achat;
+CREATE TRIGGER modification_lot_prixmin
+BEFORE INSERT ON achat
+FOR EACH ROW EXECUTE prelevement_commission() ;
+
+/*Liste des règles nécessitants une requête
+	R0 : FAITE
+	R10 : FAITE
+	R15 : FAITE
+*/
+
+/*Liste des règles nécessitants une contrainte
+	R1 : Enum (contrainte de domaine) --> Existe déjà sous la forme d'un type
+	
+*/
+/*Liste des règles nécessitants une fonction
+
+	
+*/
+	
+
+/*Liste des régles nécessitants une procédure :
+	R7	: 
+	R11 : 
+	R15 : en cours
+*/
+
+
+/*Liste des règles non traités
+	R9 : Le client ne voit que le prix estimé du lot
+	R12 : Un client ayant remporté un lot, possède 24h pour confirmer l’achat.
+	R17 : Lorsqu' un lot n’est plus en vente, tout client pourra voir le résultat de la vente pendant 24 heures.
+	R16 : Si un lot n’a pas trouvé preneur, son état devient un échec.
+	R13 : Si un client ne confirme pas l’achat ou le refuse, le lot est gagné par le client suivant et ne possède pas de rétractation.
+*/
+	
+	

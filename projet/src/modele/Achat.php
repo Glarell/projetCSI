@@ -3,8 +3,8 @@ namespace projet\modele;
 class Achat extends \Illuminate\Database\Eloquent\Model
 {
 
-    protected $table = 'public.produit';
-    protected $primaryKey = 'idproduit';
+    protected $table = 'public.achat';
+    protected $primaryKey = 'idachat';
     public $timestamps = false;
 
     public function lots() {

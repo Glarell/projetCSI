@@ -2,6 +2,7 @@
 namespace projet\controller;
 use projet\modele\Lot;
 use projet\vue\VueAfficherLots;
+use projet\vue\VueSupprimerLot;
 use Slim\Slim;
 use Illuminate\Database\Capsule\Manager as DB;
 use projet\vue\VueCreerLot;
@@ -47,6 +48,28 @@ class LotController
         } else {
             $liste_lots = Lot::get();
             $vue = new VueAfficherLots(1,$liste_lots);
+            $vue->render();
+        }
+    }
+
+    public static function suppression() {
+        if (isset($_POST['supprimer'])) {
+            $idlot = $_POST['idLot'];
+            $file = parse_ini_file('src/conf/conf.ini');
+            $db = new DB();
+            $db->addConnection($file);
+            $db->setAsGlobal();
+            $db->bootEloquent();
+            $res=DB::select('SELECT public."supprimer_lot"('. $idlot .')');
+            foreach ($res[0] as $v) {
+                if ($v == 0) {
+                    echo 'suppresion reussie';
+                } else {
+                    echo 'suppresion ratée';
+                }
+            }
+        } else {
+            $vue = new VueSupprimerLot();
             $vue->render();
         }
     }

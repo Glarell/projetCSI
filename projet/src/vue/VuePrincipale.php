@@ -48,7 +48,6 @@ class VuePrincipale
     {
         $this->app = Slim::getInstance();
         $this->lienAccueil = $this->app->urlFor('page_index');
-        $this->lienAfficherUneListe = $this->app->urlFor('demander_une_liste');
         $this->lienCreerLot = $this->app->urlFor('creer_lot');
         $this->lienVersClient = $this->app->urlFor('page_index_client');
 
@@ -82,6 +81,11 @@ class VuePrincipale
                   <li class="nav-item">
                     <a class="nav-link" href="$this->lienCreerLot">Créer un lot</a>
                   </li>
+                  
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/supprimer/lot">Supprimer un lot</a>
+                  </li>
+                  
                   <li class="nav-item">
                     <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/client/1">Client</a>
                   </li>
@@ -92,6 +96,10 @@ class VuePrincipale
                   
                    <li class="nav-item">
                     <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/afficher/produits/gestionnaire">Voir produits</a>
+                  </li>
+                                    
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/resultat/vente/">Résultat vente</a>
                   </li>
                                     
                   <li class="nav-item">
@@ -109,7 +117,6 @@ END;
     {
         $this->app = Slim::getInstance();
         $this->lienAccueil = $this->app->urlFor('page_index');
-        $this->lienAfficherUneListe = $this->app->urlFor('demander_une_liste');
         $this->lienCreerLot = $this->app->urlFor('creer_lot');
 
         $this->URLimages = $this->app->request->getRootUri() . '/img/';
@@ -157,6 +164,10 @@ END;
                   
                   <li class="nav-item">
                     <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/proposer/achat/">Proposer un achat</a>
+                  </li>
+                  
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/resultat/vente/">Résultat vente</a>
                   </li>
                   
                   <li class="nav-item">
