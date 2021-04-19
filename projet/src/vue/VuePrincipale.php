@@ -99,7 +99,7 @@ class VuePrincipale
                   </li>
                                     
                   <li class="nav-item">
-                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/resultat/vente/">Résultat vente</a>
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/resultat/vente/gestionnaire/">Résultat vente</a>
                   </li>
                                     
                   <li class="nav-item">
@@ -167,7 +167,7 @@ END;
                   </li>
                   
                   <li class="nav-item">
-                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/resultat/vente/">Résultat vente</a>
+                    <a class="nav-link" href="/ProjetL3CSI/ProjetL3CSI/projet/resultat/vente/client/">Résultat vente</a>
                   </li>
                   
                   <li class="nav-item">

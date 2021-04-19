@@ -1,0 +1,45 @@
+-- Suppression des propositions d’achats, lorsque le lot n’est plus en vente
+-- On doit avoir un trigger_modification_lot en deux partie
+-- update sans remise en vente (exemple : changement de l'état du lot)
+-- update pour remise en vente
+CREATE OR REPLACE FUNCTION trigger_modification_lot() RETURNS TRIGGER
+AS $tml$
+BEGIN
+
+	IF	(NEW.lot_etat='Vendu')
+		OR (NEW.lot_etat='Expiré')
+		OR (NEW.lot_etat='Echec') THEN
+		-- partie changement de l'état du lot
+		IF	(NEW.lot_etat='Vendu') THEN
+			--  INSERT INTO achat la proposition gagnante
+		END IF ;
+			--DELETE FROM proposition_achat WHERE lotid=leLot;
+	ELSE		
+	-- partie remise en vente
+		IF	(OLD.lot_etat='Vendu') THEN
+			RAISE EXCEPTION
+				USING MESSAGE = 'Lot vendu. Remise en vente impossible' ;
+		END IF;
+		IF(NEW.lot_prixMin <= OLD.lot_prixMin*0,9) THEN
+			RAISE EXCEPTION
+				USING MESSAGE = 'Le prix minimum doit être abaissé d au moins 10 % par rapport au précédant. ' ;
+		END IF;
+		IF	(NEW.lot_dateF<=NOW()) OR (NEW.lot_dateD<NOW()) THEN
+			RAISE EXCEPTION
+				USING MESSAGE = 'Date(s) incohérente(s).' ;
+		ELSE IF	(NEW.lot_dateD>NOW()) THEN
+				NEW.lot_etat = 'En attente de mise en vente' ;
+			ELSE
+				NEW.lot_etat = 'En vente' ;
+			END IF;
+		END IF;
+	END IF ;
+	NEW.lot_nmbrmiseEnVente = OLD.lot_nmbrmiseEnVente +1 ;
+	
+END ;
+$tml$ LANGUAGE plpgsql ;
+
+DROP TRIGGER IF EXISTS modification_lot ON lot;
+CREATE TRIGGER modification_lot
+BEFORE UPDATE ON lot
+FOR EACH ROW EXECUTE FUNCTION trigger_modification_lot() ;

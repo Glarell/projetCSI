@@ -6,6 +6,7 @@ CREATE DATABASE "PROJET"
     LC_CTYPE = 'French_France.1252'
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
+	
 --			TYPE
 DROP TYPE IF EXISTS TypeProduit CASCADE;
 CREATE TYPE TypeProduit AS ENUM ('type1', 'type2', 'type3');
@@ -60,7 +61,9 @@ ALTER TABLE LOT (
 	ADD CONSTRAINT lot_prixMin_inf_estimation
 		CHECK(lot_prixEstime>prixMin),
 	ADD CONSTRAINT lot_prix_sup_zero
-		CHECK(lot_prixEstime>0)
+		CHECK(lot_prixEstime>0),
+	ADD CONSTRAINT lot_dateF_sup_dateD
+		CHECK(lot_dateF>lot_dateD)
 ) ;
 
 --			REQUETE PREPAREE --Attention l'instruction DEALLOCATE n'est pas idempotente
@@ -113,20 +116,28 @@ BEFORE INSERT ON proposition_achat
 FOR EACH ROW EXECUTE FUNCTION trigger_ajout_prop() ;
 
 
-CREATE OR REPLACE FUNCTION modification_lot_prixmin() RETURNS TRIGGER
+CREATE OR REPLACE FUNCTION trigger_remise_vente() RETURNS TRIGGER
 AS $mlpm$
 BEGIN
 	IF(NEW.lot_prixMin <= OLD.lot_prixMin*0,9) THEN
 		RAISE EXCEPTION
 			USING MESSAGE = 'Le prix minimum doit être abaissé d au moins 10 % par rapport au précédant. ' ;
 	END IF;
+	IF	(NEW.lot_dateF<=NOW()) OR (NEW.lot_dateD<NOW()) THEN
+		RAISE EXCEPTION
+			USING MESSAGE = 'Date(s) incohérente(s).' ;
+	END IF;
+	
+	NEW.lot_etat='En vente' ;
+	NEW.lot_nmbrmiseEnVente = OLD.lot_nmbrmiseEnVente +1 ;
+	
 END ;
 $mlpm$ LANGUAGE plpgsql ;
 
-DROP TRIGGER IF EXISTS modification_lot_prixmin ON lot;
-CREATE TRIGGER modification_lot_prixmin
-BEFORE INSERT ON lot
-FOR EACH ROW EXECUTE FUNCTION trigger_ajout_prop() ;
+DROP TRIGGER IF EXISTS remise_vente ON lot;
+CREATE TRIGGER remise_vente
+BEFORE UPDATE ON lot
+FOR EACH ROW EXECUTE FUNCTION trigger_remise_vente() ;
 
 
 
@@ -134,8 +145,6 @@ FOR EACH ROW EXECUTE FUNCTION trigger_ajout_prop() ;
 -- Jusque là le code fonctionne
 
 /*Liste des règles nécessitants un trigger
-	R3 : à l'ajout vérifie le nombre de proposition --> vérifions d'abord si le check n'empèche pas l'exécution de la commande d'insertion
-	R4 : Date inscription < date début enchère pour pouvoir faire une proposition --> idem
 	R5 : DONE
 	R6 : DONE
 	R14 : DONE
@@ -143,14 +152,13 @@ FOR EACH ROW EXECUTE FUNCTION trigger_ajout_prop() ;
 	*/
 
 	
-		
-CREATE OR REPLACE PROCEDURE prelevement_commission(leLot lot.idlot%type, leClient client.idclient%type)
-AS $$
+CREATE OR REPLACE PROCEDURE trigger_prelevement_commission()
+AS $pc$
 	DECLARE
 		var_client proposition_achat.propAchat_montant%type ;
 		var_montant proposition_achat.propAchat_montant%type ;
 	BEGIN
-	-- Prélève 5% de l'offre du client et 2% de toutes les offres
+	-- Prélève 5% de l'offre du client ayant gagné l'enchère et 2% de toutes les autres offres
 		FOR var_client, var_montant IN (
 					offres(leLot)
 				EXCEPT
@@ -159,26 +167,26 @@ AS $$
 					WHERE clientid=leClient)
 			LOOP
 				UPDATE client
-				SET client_solde = OLD.client.client_solde - var_montant*0,02
-				WHERE idclient = var_client
+				SET client_solde = OLD.client.client_solde - var_montant*0.02
+				WHERE idclient = var_client ;
 				-- Ne faut-il pas déplacer l'argent plutôt que l'effacer ?
-			END LOOP;
+			END LOOP ;
 		SELECT	propAchat_montant INTO var_montant
 		FROM	proposition_achat
 		WHERE	clientid = leClient
-			AND	lotid = leLot
+			AND	lotid = leLot ;
 
 		UPDATE client
-		SET client_solde = OLD.client.client_solde - var_montant*0,05
+		SET client_solde = OLD.client.client_solde - var_montant* 0.05
 		WHERE	idclient = leClient
-			AND lotid = leLot
+			AND lotid = leLot  ;
 	END ;
-$$ LANGUAGE plpgsql ;
+$pc$ LANGUAGE plpgsql ;
 
-DROP TRIGGER IF EXISTS confirmation_achat_lot ON achat;
-CREATE TRIGGER modification_lot_prixmin
-BEFORE INSERT ON achat
-FOR EACH ROW EXECUTE prelevement_commission() ;
+DROP TRIGGER IF EXISTS prelevement_commission ON proposition_achat;
+CREATE TRIGGER prelevement_commission
+BEFORE INSERT ON proposition_achat
+FOR EACH ROW EXECUTE PROCEDURE trigger_prelevement_commission(leLot , leClient ) ;
 
 /*Liste des règles nécessitants une requête
 	R0 : FAITE

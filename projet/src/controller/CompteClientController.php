@@ -21,7 +21,9 @@ class CompteClientController
         $db->bootEloquent();
         $proposCONFIRM = $db::table('proposition_achat')
             ->join('lot','lot.idlot','=','proposition_achat.lotid')
-            ->where('lot.lot_etat','=','En attente de confirmation')->get(['idlot','lot_nom','propachat_montant','propachat_date','lot_etat', 'proposition_achat.idpropachat']);
+            ->where('lot.lot_etat','=','En attente de confirmation')
+            ->where('proposition_achat.clientid','=',$id)
+            ->get(['idlot','lot_nom','propachat_montant','propachat_date','lot_etat', 'proposition_achat.idpropachat']);
         $achats = Achat::where('clientid','=',$id)->get();
         $verif = sizeof($proposCONFIRM);
         $verif_2 = sizeof($propos);
@@ -133,6 +135,7 @@ class CompteClientController
             $propos = Proposition_achat::where('clientid','=',$id)->get();
             $proposCONFIRM = $db::table('proposition_achat')
                 ->join('lot','lot.idlot','=','proposition_achat.lotid')
+                ->where('proposition_achat.clientid','=',$id)
                 ->where('lot.lot_etat','=','En attente de confirmation')->get(['idlot','lot_nom','propachat_montant','propachat_date','lot_etat', 'proposition_achat.idpropachat']);
             if (isset($_POST['ajouterSolde'])){
                 $newSolde = $_POST['newSolde'];
@@ -241,6 +244,7 @@ class CompteClientController
             $propos = Proposition_achat::where('clientid','=',$id)->get();
             $proposCONFIRM = $db::table('proposition_achat')
                 ->join('lot','lot.idlot','=','proposition_achat.lotid')
+                ->where('proposition_achat.clientid','=',$id)
                 ->where('lot.lot_etat','=','En attente de confirmation')->get(['idlot','lot_nom','propachat_montant','propachat_date','lot_etat', 'proposition_achat.idpropachat']);
             $verif = sizeof($proposCONFIRM);
             $verif_2 = sizeof($propos);

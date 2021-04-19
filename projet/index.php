@@ -119,9 +119,14 @@ $app->post('/valider/propachat/', function(){
 })->name('valider_propachat_post');
 
 /* resultat vente */
-$app->get('/resultat/vente/', function(){
+$app->get('/resultat/vente/client/', function(){
+    LotController::resultat_C();
+})->name('resultat_vente_client');
 
-})->name('resultat_vente');
+/* resultat vente */
+$app->get('/resultat/vente/gestionnaire/', function(){
+    LotController::resultat_G();
+})->name('resultat_vente_gestionnaire');
 
 /* supprimer lot */
 $app->get('/supprimer/lot/', function(){

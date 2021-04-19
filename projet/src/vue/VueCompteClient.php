@@ -152,9 +152,9 @@ END;
             <h1 style=\"color:white\" class=\"font-weight-light\">Vos achats passés</h1>
         </div>
         $HTML_achat
-        </div>
         </header>
         $footer
+        </div>
 ";
 
         echo $html;

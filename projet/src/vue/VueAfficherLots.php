@@ -60,7 +60,7 @@ END;
                 <li class=\"\">$value->lot_etat</li>
                 <li class=\"\">$value->lot_nbmiseenvente</li>
                 <br>
-                <a href="beug" class=\"btn btn-primary\">Voir synthèse</a>
+                <a href="/ProjetL3CSI/ProjetL3CSI/projet/resultat/vente/gestionnaire/" class=\"btn btn-primary\">Voir synthèse</a>
                 </div>
           </div>
                 <br>
